@@ -9,7 +9,7 @@ import unittest
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from vitals import RespiratoryRateEstimator  # noqa: E402
+from vitals import RespiratoryRateEstimator, TemperatureProcessor  # noqa: E402
 
 FS = 50.0
 
@@ -58,6 +58,25 @@ class RespiratoryRateTest(unittest.TestCase):
 
     def test_too_short_is_invalid(self):
         self.assertFalse(self.est.estimate([0.0, 1.0] * 100).is_valid)
+
+
+class TemperatureProcessorTest(unittest.TestCase):
+    def setUp(self):
+        self.tp = TemperatureProcessor()
+
+    def test_warm_ambient_lowers_core_estimate(self):
+        ref = self.tp.process(34.5, ambient_temp_c=22.0)
+        warm = self.tp.process(34.5, ambient_temp_c=30.0)
+        self.assertLess(warm.celsius, ref.celsius)
+
+    def test_cold_ambient_raises_core_estimate(self):
+        ref = self.tp.process(34.5, ambient_temp_c=22.0)
+        cold = self.tp.process(34.5, ambient_temp_c=14.0)
+        self.assertGreater(cold.celsius, ref.celsius)
+
+    def test_reference_ambient_uses_baseline_offset(self):
+        result = self.tp.process(34.5, ambient_temp_c=22.0)
+        self.assertAlmostEqual(result.celsius, 37.0, places=1)
 
 
 if __name__ == "__main__":

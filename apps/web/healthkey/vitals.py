@@ -234,7 +234,7 @@ class TemperatureProcessor:
             return TempResult(0.0, 0.0, "Invalid", False)
 
         # Ambient correction: higher ambient → smaller offset needed
-        ambient_correction = max(0.0, (22.0 - ambient_temp_c) * 0.05)
+        ambient_correction = (22.0 - ambient_temp_c) * 0.05
         core_c = skin_temp_c + self._SKIN_TO_CORE_OFFSET + ambient_correction
         core_c = round(core_c, 1)
         core_f = round(core_c * 9.0 / 5.0 + 32.0, 1)
